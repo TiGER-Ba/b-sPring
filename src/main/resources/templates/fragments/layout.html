@@ -175,7 +175,7 @@
                href="#" role="button" data-bs-toggle="dropdown">
                 <i class="bi bi-person-circle me-1"></i>
                 <span sec:authentication="principal.role">ROLE</span> :
-                <span sec:authentication="principal.firstName + ' ' + principal.lastName">User Name</span>
+                <span sec:authentication="principal.fullName">User Name</span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
                 <li><hr class="dropdown-divider"></li>

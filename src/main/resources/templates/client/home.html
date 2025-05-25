@@ -16,7 +16,7 @@
     <div class="row">
         <div class="col-12">
             <!-- En-tête de bienvenue -->
-            <div class="card mb-4 bg-primary text-white">
+            <div class="card mb-4 bg-gradient-success text-white">
                 <div class="card-body text-center">
                     <h2 class="card-title mb-3">
                         <i class="bi bi-person-check me-2"></i>
@@ -42,7 +42,7 @@
                             <h3 class="text-success mb-2">
                                 Solde disponible : <span th:text="${result}">0.00 DH</span>
                             </h3>
-                            <small class="text-muted" th:if="${defaultResult and selectedCurrency != 'default'}"
+                            <small class="text-muted" th:if="${defaultResult != null and selectedCurrency != null and selectedCurrency != 'default'}"
                                    th:text="'(Solde original: ' + ${defaultResult} + ')'"></small>
                         </div>
                         <div class="col-md-4 text-end">
@@ -53,40 +53,115 @@
             </div>
 
             <!-- Mes statistiques -->
+            <h4 class="text-primary mb-3">
+                <i class="bi bi-graph-up me-2"></i>Mes statistiques de crédit
+            </h4>
             <div class="row mb-4">
-                <div class="col-md-4">
-                    <div class="card border-info text-center">
+                <div class="col-md-3">
+                    <div class="card border-info text-center h-100">
                         <div class="card-body">
                             <i class="bi bi-credit-card-2-front text-info" style="font-size: 2rem;"></i>
-                            <h4 class="mt-2" th:text="${myCredits ?: 0}">0</h4>
-                            <p class="text-muted mb-0">Mes demandes</p>
+                            <h4 class="mt-2 text-info" th:text="${myCredits ?: 0}">0</h4>
+                            <p class="text-muted mb-0 fw-bold">Total demandes</p>
+                            <small class="text-muted">Toutes mes demandes</small>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card border-warning text-center">
+                <div class="col-md-3">
+                    <div class="card border-warning text-center h-100">
                         <div class="card-body">
                             <i class="bi bi-hourglass-split text-warning" style="font-size: 2rem;"></i>
-                            <h4 class="mt-2">--</h4>
-                            <p class="text-muted mb-0">En cours</p>
+                            <h4 class="mt-2 text-warning" th:text="${pendingCredits ?: 0}">0</h4>
+                            <p class="text-muted mb-0 fw-bold">En cours</p>
+                            <small class="text-muted">En attente de traitement</small>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card border-success text-center">
+                <div class="col-md-3">
+                    <div class="card border-success text-center h-100">
                         <div class="card-body">
                             <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
-                            <h4 class="mt-2">--</h4>
-                            <p class="text-muted mb-0">Approuvés</p>
+                            <h4 class="mt-2 text-success" th:text="${approvedCredits ?: 0}">0</h4>
+                            <p class="text-muted mb-0 fw-bold">Approuvées</p>
+                            <small class="text-muted">Demandes acceptées</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-danger text-center h-100">
+                        <div class="card-body">
+                            <i class="bi bi-x-circle text-danger" style="font-size: 2rem;"></i>
+                            <h4 class="mt-2 text-danger" th:text="${rejectedCredits ?: 0}">0</h4>
+                            <p class="text-muted mb-0 fw-bold">Refusées</p>
+                            <small class="text-muted">Demandes rejetées</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Montant total des crédits approuvés -->
+            <div th:if="${approvedCredits > 0}" class="card mb-4 border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-currency-dollar me-2"></i>Mes crédits approuvés
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="text-success mb-2" th:text="${formattedTotalAmount}">0.00 DH</h2>
+                    <p class="text-muted mb-0">Montant total de vos crédits approuvés</p>
+                </div>
+            </div>
+
+            <!-- Dernière demande -->
+            <div th:if="${hasRequests}" class="card mb-4 border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history me-2"></i>Ma dernière demande
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6>Demande #<span th:text="${lastRequest.id}">1</span></h6>
+                            <p class="mb-1">
+                                <strong>Montant :</strong> <span th:text="${lastRequest.formattedAmount}">10,000 DH</span>
+                            </p>
+                            <p class="mb-1">
+                                <strong>Durée :</strong> <span th:text="${lastRequest.duration}">24</span> mois
+                            </p>
+                            <p class="mb-1">
+                                <strong>Date :</strong> <span th:text="${lastRequest.formattedRequestDate}">01/01/2024</span>
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span th:switch="${lastRequest.status.name()}" class="badge fs-6">
+                                <span th:case="'PENDING'" class="badge bg-warning">
+                                    <i class="bi bi-hourglass-split me-1"></i>En attente
+                                </span>
+                                <span th:case="'APPROVED'" class="badge bg-success">
+                                    <i class="bi bi-check-circle me-1"></i>Approuvée
+                                </span>
+                                <span th:case="'REJECTED'" class="badge bg-danger">
+                                    <i class="bi bi-x-circle me-1"></i>Refusée
+                                </span>
+                            </span>
+                            <div class="mt-2">
+                                <a th:href="@{/client/credit/details(id=${lastRequest.id})}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-eye me-1"></i>Voir détails
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Actions rapides -->
+            <h4 class="text-primary mb-3">
+                <i class="bi bi-lightning-fill me-2"></i>Actions rapides
+            </h4>
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <div class="card h-100 border-primary">
+                    <div class="card h-100 border-primary shadow-sm">
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title text-primary">
                                 <i class="bi bi-list-ul me-2"></i>Mes demandes de crédit
@@ -95,15 +170,20 @@
                                 Consultez l'état de vos demandes de crédit en cours et passées.
                                 Suivez leur progression et historique.
                             </p>
-                            <a th:href="@{/client/credit/list}" class="btn btn-outline-primary">
-                                <i class="bi bi-eye me-1"></i> Voir mes demandes
-                            </a>
+                            <div class="d-grid gap-2">
+                                <a th:href="@{/client/credit/list}" class="btn btn-primary">
+                                    <i class="bi bi-eye me-1"></i> Voir mes demandes
+                                </a>
+                                <small class="text-muted text-center">
+                                    <i class="bi bi-credit-card me-1"></i><span th:text="${myCredits}">0</span> demande(s) au total
+                                </small>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-md-6 mb-3">
-                    <div class="card h-100 border-success">
+                    <div class="card h-100 border-success shadow-sm">
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title text-success">
                                 <i class="bi bi-plus-circle me-2"></i>Nouvelle demande
@@ -112,9 +192,45 @@
                                 Créez une nouvelle demande de crédit rapidement et simplement.
                                 Obtenez une réponse rapide à votre demande.
                             </p>
-                            <a th:href="@{/client/credit/new}" class="btn btn-success">
-                                <i class="bi bi-file-earmark-plus me-1"></i> Créer une demande
-                            </a>
+                            <div class="d-grid gap-2">
+                                <a th:href="@{/client/credit/new}" class="btn btn-success">
+                                    <i class="bi bi-file-earmark-plus me-1"></i> Créer une demande
+                                </a>
+                                <small class="text-muted text-center">
+                                    <i class="bi bi-clock me-1"></i>Traitement en 2-5 jours
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progression -->
+            <div th:if="${myCredits > 0}" class="card mt-4 border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up me-2"></i>Ma progression
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <h6 class="text-info">Taux d'approbation</h6>
+                            <div class="h3 text-success" th:if="${myCredits > 0}"
+                                 th:text="${#numbers.formatDecimal(approvedCredits * 100.0 / myCredits, 1, 1)} + '%'">0%</div>
+                            <small class="text-muted">De mes demandes</small>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h6 class="text-info">Montant moyen</h6>
+                            <div class="h3 text-primary" th:if="${approvedCredits > 0}"
+                                 th:text="${#numbers.formatDecimal(totalApprovedAmount / approvedCredits, 0, 2)} + ' DH'">0 DH</div>
+                            <div class="h3 text-muted" th:if="${approvedCredits == 0}">N/A</div>
+                            <small class="text-muted">Par crédit approuvé</small>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h6 class="text-info">En attente</h6>
+                            <div class="h3 text-warning" th:text="${pendingCredits}">0</div>
+                            <small class="text-muted">Demande(s) à traiter</small>
                         </div>
                     </div>
                 </div>
@@ -123,7 +239,7 @@
             <!-- Informations utiles -->
             <div class="row mt-4">
                 <div class="col-md-6">
-                    <div class="card">
+                    <div class="card h-100">
                         <div class="card-header">
                             <h6 class="mb-0">
                                 <i class="bi bi-info-circle me-2"></i>Taux de change
@@ -141,7 +257,7 @@
                 </div>
 
                 <div class="col-md-6">
-                    <div class="card">
+                    <div class="card h-100">
                         <div class="card-header">
                             <h6 class="mb-0">
                                 <i class="bi bi-question-circle me-2"></i>Aide & Support
@@ -231,7 +347,7 @@
     });
 
     // Effet hover sur les cartes d'action
-    document.querySelectorAll('.card').forEach(card => {
+    document.querySelectorAll('.shadow-sm').forEach(card => {
         card.addEventListener('mouseenter', function() {
             this.style.transform = 'translateY(-5px)';
             this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.1)';
@@ -251,5 +367,24 @@
         }
     });
 </script>
+
+<style>
+    .bg-gradient-success {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    }
+
+    .card {
+        transition: all 0.3s ease;
+    }
+
+    .shadow-sm:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .h-100 {
+        height: 100%;
+    }
+</style>
 </body>
 </html>
