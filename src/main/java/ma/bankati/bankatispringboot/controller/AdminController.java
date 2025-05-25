@@ -31,17 +31,24 @@ public class AdminController {
         log.debug("Accès dashboard admin pour: {}", user.getUsername());
 
         try {
-            // Statistiques des utilisateurs
-            long totalUsers = userService.countByRole(ERole.USER);
-            long totalAdmins = userService.countByRole(ERole.ADMIN);
+            // Statistiques des utilisateurs avec protection contre null
+            Long totalUsersLong = userService.countByRole(ERole.USER);
+            Long totalAdminsLong = userService.countByRole(ERole.ADMIN);
 
-            // Statistiques des crédits
-            long pendingCredits = creditService.countByStatus(CreditStatus.PENDING);
-            long approvedCredits = creditService.countByStatus(CreditStatus.APPROVED);
-            long rejectedCredits = creditService.countByStatus(CreditStatus.REJECTED);
+            long totalUsers = totalUsersLong != null ? totalUsersLong : 0L;
+            long totalAdmins = totalAdminsLong != null ? totalAdminsLong : 0L;
+
+            // Statistiques des crédits avec protection contre null
+            Long pendingCreditsLong = creditService.countByStatus(CreditStatus.PENDING);
+            Long approvedCreditsLong = creditService.countByStatus(CreditStatus.APPROVED);
+            Long rejectedCreditsLong = creditService.countByStatus(CreditStatus.REJECTED);
+
+            long pendingCredits = pendingCreditsLong != null ? pendingCreditsLong : 0L;
+            long approvedCredits = approvedCreditsLong != null ? approvedCreditsLong : 0L;
+            long rejectedCredits = rejectedCreditsLong != null ? rejectedCreditsLong : 0L;
             long totalCredits = pendingCredits + approvedCredits + rejectedCredits;
 
-            // Montants
+            // Montants avec protection contre null
             BigDecimal totalApprovedAmount = creditService.getTotalApprovedAmount();
             if (totalApprovedAmount == null) {
                 totalApprovedAmount = BigDecimal.ZERO;
@@ -66,7 +73,8 @@ public class AdminController {
 
         } catch (Exception e) {
             log.error("Erreur lors du chargement des statistiques du dashboard", e);
-            // Valeurs par défaut en cas d'erreur
+
+            // Valeurs par défaut garanties non-null en cas d'erreur
             model.addAttribute("user", user);
             model.addAttribute("totalUsers", 0L);
             model.addAttribute("totalAdmins", 0L);
@@ -76,6 +84,9 @@ public class AdminController {
             model.addAttribute("rejectedCredits", 0L);
             model.addAttribute("totalApprovedAmount", BigDecimal.ZERO);
             model.addAttribute("formattedTotalAmount", "0.00 DH");
+
+            // Ajouter un message d'erreur pour l'utilisateur
+            model.addAttribute("errorMessage", "Erreur lors du chargement des statistiques. Veuillez actualiser la page.");
         }
 
         return "admin/home";
