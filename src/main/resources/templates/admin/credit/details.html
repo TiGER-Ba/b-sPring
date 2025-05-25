@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head}">
+    <title>Détails de la Demande - Bankati</title>
+</head>
+
+<body>
+<!-- Navbar -->
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<!-- Messages -->
+<div th:replace="~{fragments/layout :: messages}"></div>
+
+<!-- Contenu principal -->
+<div class="container main-content">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <a th:href="@{/admin/credits/list}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Retour à la liste
+                </a>
+                <h2 class="text-primary mb-0">
+                    Détails de la Demande #<span th:text="${creditRequest.id}">1</span>
+                </h2>
+                <div>
+                        <span th:switch="${creditRequest.status.name()}" class="badge fs-6">
+                            <span th:case="'PENDING'" class="badge bg-warning">En attente</span>
+                            <span th:case="'APPROVED'" class="badge bg-success">Approuvée</span>
+                            <span th:case="'REJECTED'" class="badge bg-danger">Refusée</span>
+                        </span>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Informations principales -->
+                <div class="col-md-8">
+                    <!-- Informations de la demande -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Informations de la demande
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td class="fw-bold text-muted">ID de la demande:</td>
+                                            <td th:text="${creditRequest.id}">1</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold text-muted">Montant demandé:</td>
+                                            <td>
+                                                    <span class="fs-5 fw-bold text-success" th:text="${creditRequest.formattedAmount}">
+                                                        15,000.00 DH
+                                                    </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold text-muted">Durée:</td>
+                                            <td>
+                                                <span th:text="${creditRequest.duration} + ' mois'">24 mois</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold text-muted">Mensualité estimée:</td>
+                                            <td>
+                                                    <span class="text-info fw-bold" th:text="${creditRequest.monthlyPayment} + ' DH'">
+                                                        625.00 DH
+                                                    </span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td class="fw-bold text-muted">Date de demande:</td>
+                                            <td th:text="${creditRequest.formattedRequestDate}">01/01/2024</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold text-muted">Statut actuel:</td>
+                                            <td>
+                                                    <span th:switch="${creditRequest.status.name()}" class="badge">
+                                                        <span th:case="'PENDING'" class="badge bg-warning">
+                                                            <i class="bi bi-hourglass-split me-1"></i>En attente
+                                                        </span>
+                                                        <span th:case="'APPROVED'" class="badge bg-success">
+                                                            <i class="bi bi-check-circle me-1"></i>Approuvée
+                                                        </span>
+                                                        <span th:case="'REJECTED'" class="badge bg-danger">
+                                                            <i class="bi bi-x-circle me-1"></i>Refusée
+                                                        </span>
+                                                    </span>
+                                            </td>
+                                        </tr>
+                                        <tr th:if="${creditRequest.processedDate}">
+                                            <td class="fw-bold text-muted">Date de traitement:</td>
+                                            <td th:text="${creditRequest.formattedProcessedDate}">02/01/2024</td>
+                                        </tr>
+                                        <tr th:if="${creditRequest.adminComment}">
+                                            <td class="fw-bold text-muted">Commentaire admin:</td>
+                                            <td>
+                                                    <span class="fst-italic text-secondary" th:text="${creditRequest.adminComment}">
+                                                        Commentaire de l'administrateur
+                                                    </span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description de la demande -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="bi bi-card-text me-2"></i>
+                                Motif de la demande
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0" th:text="${creditRequest.description}">
+                                Description détaillée de la demande de crédit...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar avec informations client et actions -->
+                <div class="col-md-4">
+                    <!-- Informations du client -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0">
+                                <i class="bi bi-person-circle me-2"></i>
+                                Informations client
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <td class="fw-bold text-muted">ID Client:</td>
+                                    <td th:text="${creditRequest.client.id}">123</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">Nom complet:</td>
+                                    <td>
+                                            <span class="fw-bold" th:text="${creditRequest.client.fullName}">
+                                                John Doe
+                                            </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">Username:</td>
+                                    <td th:text="${creditRequest.client.username}">johndoe</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">Date d'inscription:</td>
+                                    <td th:text="${#temporals.format(creditRequest.client.creationDate, 'dd/MM/yyyy')}">
+                                        15/12/2023
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Actions administrateur -->
+                    <div th:if="${creditRequest.status.name() == 'PENDING'}" class="card border-warning">
+                        <div class="card-header bg-warning bg-opacity-25">
+                            <h6 class="mb-0 text-warning">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                Actions requises
+                            </h6>
+                        </div>
+                        <div class="card-body text-center">
+                            <p class="card-text mb-3">
+                                Cette demande est en attente de traitement.
+                                Veuillez l'approuver ou la refuser.
+                            </p>
+                            <div class="d-grid gap-2">
+                                <button type="button"
+                                        class="btn btn-success"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#approveModal">
+                                    <i class="bi bi-check-lg me-1"></i> Approuver la demande
+                                </button>
+                                <button type="button"
+                                        class="btn btn-danger"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#rejectModal">
+                                    <i class="bi bi-x-lg me-1"></i> Refuser la demande
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Historique (si traité) -->
+                    <div th:if="${creditRequest.status.name() != 'PENDING'}" class="card">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">
+                                <i class="bi bi-clock-history me-2"></i>
+                                Historique
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="timeline">
+                                <div class="timeline-item">
+                                    <i class="bi bi-circle-fill text-info"></i>
+                                    <div class="timeline-content">
+                                        <strong>Demande soumise</strong><br>
+                                        <small th:text="${creditRequest.formattedRequestDate}">01/01/2024</small>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <i th:class="${creditRequest.status.name() == 'APPROVED'} ? 'bi bi-check-circle-fill text-success' : 'bi bi-x-circle-fill text-danger'"></i>
+                                    <div class="timeline-content">
+                                        <strong th:text="${creditRequest.status.name() == 'APPROVED'} ? 'Demande approuvée' : 'Demande refusée'">
+                                            Demande traitée
+                                        </strong><br>
+                                        <small th:text="${creditRequest.formattedProcessedDate}">02/01/2024</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modales (si la demande est en attente) -->
+            <div th:if="${creditRequest.status.name() == 'PENDING'}">
+                <!-- Modal d'approbation -->
+                <div class="modal fade" id="approveModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form th:action="@{/admin/credits/process}" method="post">
+                                <input type="hidden" name="id" th:value="${creditRequest.id}">
+                                <input type="hidden" name="decision" value="approve">
+
+                                <div class="modal-header bg-light">
+                                    <h5 class="modal-title">
+                                        <i class="bi bi-check-circle text-success me-2"></i>
+                                        Approuver la demande #<span th:text="${creditRequest.id}">1</span>
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="alert alert-info">
+                                        <strong>Récapitulatif de la demande:</strong><br>
+                                        Client: <span th:text="${creditRequest.client.fullName}">John Doe</span><br>
+                                        Montant: <span th:text="${creditRequest.formattedAmount}">15,000 DH</span><br>
+                                        Durée: <span th:text="${creditRequest.duration} + ' mois'">24 mois</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Commentaire (optionnel)</label>
+                                        <textarea class="form-control" name="reason" rows="3"
+                                                  placeholder="Commentaire sur l'approbation..."></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bi bi-check-lg me-1"></i>Confirmer l'approbation
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal de refus -->
+                <div class="modal fade" id="rejectModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form th:action="@{/admin/credits/process}" method="post">
+                                <input type="hidden" name="id" th:value="${creditRequest.id}">
+                                <input type="hidden" name="decision" value="reject">
+
+                                <div class="modal-header bg-light">
+                                    <h5 class="modal-title">
+                                        <i class="bi bi-x-circle text-danger me-2"></i>
+                                        Refuser la demande #<span th:text="${creditRequest.id}">1</span>
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="alert alert-warning">
+                                        <strong>Récapitulatif de la demande:</strong><br>
+                                        Client: <span th:text="${creditRequest.client.fullName}">John Doe</span><br>
+                                        Montant: <span th:text="${creditRequest.formattedAmount}">15,000 DH</span><br>
+                                        Durée: <span th:text="${creditRequest.duration} + ' mois'">24 mois</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Motif du refus *</label>
+                                        <textarea class="form-control" name="reason" rows="3" required
+                                                  placeholder="Veuillez préciser la raison du refus..."></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="bi bi-x-lg me-1"></i>Confirmer le refus
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+<!-- Scripts -->
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+<!-- CSS pour la timeline -->
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 8px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background-color: #dee2e6;
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .timeline-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .timeline-item i {
+        position: absolute;
+        left: -26px;
+        top: 2px;
+        width: 16px;
+        height: 16px;
+        background-color: white;
+        border-radius: 50%;
+    }
+
+    .timeline-content {
+        padding-left: 15px;
+    }
+</style>
+</body>
+</html>

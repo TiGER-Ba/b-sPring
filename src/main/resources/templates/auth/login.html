@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Bankati</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-top: 5%;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .login-body {
+            padding: 2rem;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+
+        .input-group-text {
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-right: none;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="login-container">
+                <!-- En-tête -->
+                <div class="login-header">
+                    <div class="logo">
+                        <i class="bi bi-bank2"></i>
+                    </div>
+                    <h2 th:text="${AppName}">Bankati</h2>
+                    <p class="mb-0">Connectez-vous à votre espace</p>
+                </div>
+
+                <!-- Corps du formulaire -->
+                <div class="login-body">
+                    <!-- Messages d'erreur/succès -->
+                    <div th:if="${globalMessage}"
+                         th:class="${globalMessage.contains('succès') or globalMessage.contains('Connexion réussie')} ? 'alert alert-success' : 'alert alert-danger'"
+                         th:text="${globalMessage}">
+                    </div>
+
+                    <!-- Formulaire de connexion -->
+                    <form th:action="@{/login}" method="post">
+                        <!-- Nom d'utilisateur -->
+                        <div class="mb-3">
+                            <label for="lg" class="form-label fw-bold">
+                                <i class="bi bi-person me-1"></i> Nom d'utilisateur
+                            </label>
+                            <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-person-fill text-primary"></i>
+                                    </span>
+                                <input type="text"
+                                       class="form-control"
+                                       id="lg"
+                                       name="lg"
+                                       placeholder="Votre nom d'utilisateur"
+                                       required
+                                       autocomplete="username">
+                            </div>
+                            <div th:if="${usernameError}" class="text-danger small mt-1" th:text="${usernameError}"></div>
+                        </div>
+
+                        <!-- Mot de passe -->
+                        <div class="mb-4">
+                            <label for="pss" class="form-label fw-bold">
+                                <i class="bi bi-lock me-1"></i> Mot de passe
+                            </label>
+                            <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-lock-fill text-primary"></i>
+                                    </span>
+                                <input type="password"
+                                       class="form-control"
+                                       id="pss"
+                                       name="pss"
+                                       placeholder="Votre mot de passe"
+                                       required
+                                       autocomplete="current-password">
+                            </div>
+                            <div th:if="${passwordError}" class="text-danger small mt-1" th:text="${passwordError}"></div>
+                        </div>
+
+                        <!-- Bouton de connexion -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-login">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>
+                                Se connecter
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Informations de test -->
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <h6 class="fw-bold text-muted mb-2">
+                            <i class="bi bi-info-circle me-1"></i> Comptes de test
+                        </h6>
+                        <small class="text-muted">
+                            <strong>Admin:</strong> admin / admin<br>
+                            <strong>Client:</strong> user / user
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head}">
+    <title>Détails de ma demande - Bankati</title>
+</head>
+
+<body>
+<!-- Navbar -->
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<!-- Messages -->
+<div th:replace="~{fragments/layout :: messages}"></div>
+
+<!-- Contenu principal -->
+<div class="container main-content">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <a th:href="@{/client/credit/list}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Retour à mes demandes
+                </a>
+                <h2 class="text-primary mb-0">
+                    Ma Demande #<span th:text="${creditRequest.id}">1</span>
+                </h2>
+                <div>
+                        <span th:switch="${creditRequest.status.name()}" class="badge fs-6">
+                            <span th:case="'PENDING'" class="badge bg-warning">En attente</span>
+                            <span th:case="'APPROVED'" class="badge bg-success">Approuvée</span>
+                            <span th:case="'REJECTED'" class="badge bg-danger">Refusée</span>
+                        </span>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Informations principales -->
+                <div class="col-md-8">
+                    <!-- Card avec statut principal -->
+                    <div th:switch="${creditRequest.status.name()}" class="card mb-4">
+                        <div th:case="'PENDING'" class="card border-warning">
+                            <div class="card-header bg-warning bg-opacity-25">
+                                <h5 class="mb-0 text-warning">
+                                    <i class="bi bi-hourglass-split me-2"></i>
+                                    Demande en cours de traitement
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">
+                                    Votre demande de crédit est en cours d'examen par nos équipes.
+                                    Vous recevrez une réponse sous 2 à 5 jours ouvrés.
+                                </p>
+                                <div class="progress mb-2">
+                                    <div class="progress-bar bg-warning" style="width: 50%"></div>
+                                </div>
+                                <small class="text-muted">Étape 2/3 : Examen de la demande</small>
+                            </div>
+                        </div>
+
+                        <div th:case="'APPROVED'" class="card border-success">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                    Félicitations ! Votre demande a été approuvée
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">
+                                    Votre demande de crédit a été approuvée le
+                                    <strong th:text="${creditRequest.formattedProcessedDate}">02/01/2024</strong>.
+                                    Le montant sera crédité sur votre compte.
+                                </p>
+                                <div class="progress mb-2">
+                                    <div class="progress-bar bg-success" style="width: 100%"></div>
+                                </div>
+                                <small class="text-muted">Étape 3/3 : Crédit approuvé et traité</small>
+                            </div>
+                        </div>
+
+                        <div th:case="'REJECTED'" class="card border-danger">
+                            <div class="card-header bg-danger text-white">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-x-circle-fill me-2"></i>
+                                    Demande non approuvée
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">
+                                    Votre demande de crédit n'a pas pu être approuvée le
+                                    <strong th:text="${creditRequest.formattedProcessedDate}">02/01/2024</strong>.
+                                </p>
+                                <div th:if="${creditRequest.adminComment}" class="alert alert-info">
+                                    <strong>Motif:</strong> <span th:text="${creditRequest.adminComment}">Raison du refus</span>
+                                </div>
+                                <p class="small text-muted">
+                                    Vous pouvez soumettre une nouvelle demande en adaptant
+                                    les paramètres selon les commentaires de nos conseillers.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Détails de la demande -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Détails de ma demande
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td class="fw-bold text-muted">Référence:</td>
+                                            <td>
+                                                    <span class="badge bg-light text-dark" th:text="'#' + ${creditRequest.id}">
+                                                        #1
+                                                    </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold text-muted">Montant demandé:</td>
+                                            <td>
+                                                    <span class="fs-5 fw-bold text-success" th:text="${creditRequest.formattedAmount}">
+                                                        15,000.00 DH
+                                                    </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold text-muted">Durée:</td>
+                                            <td>
+                                                <span th:text="${creditRequest.duration} + ' mois'">24 mois</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold text-muted">Mensualité:</td>
+                                            <td>
+                                                    <span class="text-info fw-bold" th:text="${creditRequest.monthlyPayment} + ' DH/mois'">
+                                                        625.00 DH/mois
+                                                    </span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td class="fw-bold text-muted">Date de soumission:</td>
+                                            <td th:text="${creditRequest.formattedRequestDate}">01/01/2024</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold text-muted">Statut:</td>
+                                            <td>
+                                                    <span th:switch="${creditRequest.status.name()}" class="badge">
+                                                        <span th:case="'PENDING'" class="badge bg-warning">
+                                                            <i class="bi bi-hourglass-split me-1"></i>En attente
+                                                        </span>
+                                                        <span th:case="'APPROVED'" class="badge bg-success">
+                                                            <i class="bi bi-check-circle me-1"></i>Approuvée
+                                                        </span>
+                                                        <span th:case="'REJECTED'" class="badge bg-danger">
+                                                            <i class="bi bi-x-circle me-1"></i>Refusée
+                                                        </span>
+                                                    </span>
+                                            </td>
+                                        </tr>
+                                        <tr th:if="${creditRequest.processedDate}">
+                                            <td class="fw-bold text-muted">Date de traitement:</td>
+                                            <td th:text="${creditRequest.formattedProcessedDate}">02/01/2024</td>
+                                        </tr>
+                                        <tr th:if="${creditRequest.status.name() == 'PENDING'}">
+                                            <td class="fw-bold text-muted">Délai estimé:</td>
+                                            <td>
+                                                <span class="text-warning">2-5 jours ouvrés</span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Motif de la demande -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="bi bi-card-text me-2"></i>
+                                Motif de ma demande
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <blockquote class="blockquote mb-0">
+                                <p th:text="${creditRequest.description}">
+                                    Description détaillée de la demande de crédit...
+                                </p>
+                            </blockquote>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-md-4">
+                    <!-- Chronologie -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">
+                                <i class="bi bi-clock-history me-2"></i>
+                                Suivi de ma demande
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="timeline">
+                                <!-- Étape 1: Soumission -->
+                                <div class="timeline-item completed">
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                    <div class="timeline-content">
+                                        <strong>Demande soumise</strong><br>
+                                        <small th:text="${creditRequest.formattedRequestDate}">01/01/2024</small>
+                                    </div>
+                                </div>
+
+                                <!-- Étape 2: En cours -->
+                                <div class="timeline-item"
+                                     th:classappend="${creditRequest.status.name() == 'PENDING'} ? 'active' : 'completed'">
+                                    <i th:class="${creditRequest.status.name() == 'PENDING'} ? 'bi bi-arrow-clockwise text-warning' : 'bi bi-check-circle-fill text-success'"></i>
+                                    <div class="timeline-content">
+                                        <strong>Examen en cours</strong><br>
+                                        <small th:if="${creditRequest.status.name() == 'PENDING'}">En cours...</small>
+                                        <small th:if="${creditRequest.status.name() != 'PENDING'}"
+                                               th:text="${creditRequest.formattedProcessedDate}">02/01/2024</small>
+                                    </div>
+                                </div>
+
+                                <!-- Étape 3: Décision -->
+                                <div class="timeline-item"
+                                     th:classappend="${creditRequest.status.name() != 'PENDING'} ? 'completed' : ''">
+                                    <i th:switch="${creditRequest.status.name()}">
+                                        <i th:case="'APPROVED'" class="bi bi-check-circle-fill text-success"></i>
+                                        <i th:case="'REJECTED'" class="bi bi-x-circle-fill text-danger"></i>
+                                        <i th:case="*" class="bi bi-circle text-muted"></i>
+                                    </i>
+                                    <div class="timeline-content">
+                                        <strong th:switch="${creditRequest.status.name()}">
+                                            <span th:case="'APPROVED'">Crédit approuvé</span>
+                                            <span th:case="'REJECTED'">Demande refusée</span>
+                                            <span th:case="*">Décision finale</span>
+                                        </strong><br>
+                                        <small th:if="${creditRequest.processedDate}"
+                                               th:text="${creditRequest.formattedProcessedDate}">En attente</small>
+                                        <small th:if="${!creditRequest.processedDate}">En attente</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions possibles -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">
+                                <i class="bi bi-gear me-2"></i>
+                                Actions disponibles
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <!-- Supprimer si en attente -->
+                                <div th:if="${creditRequest.status.name() == 'PENDING'}">
+                                    <button type="button"
+                                            class="btn btn-outline-danger w-100"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteModal">
+                                        <i class="bi bi-trash me-1"></i>
+                                        Annuler ma demande
+                                    </button>
+                                    <small class="text-muted">
+                                        Vous pouvez annuler votre demande tant qu'elle n'est pas traitée.
+                                    </small>
+                                </div>
+
+                                <!-- Nouvelle demande si refusée -->
+                                <div th:if="${creditRequest.status.name() == 'REJECTED'}">
+                                    <a th:href="@{/client/credit/new}" class="btn btn-primary w-100">
+                                        <i class="bi bi-plus-circle me-1"></i>
+                                        Nouvelle demande
+                                    </a>
+                                    <small class="text-muted">
+                                        Vous pouvez soumettre une nouvelle demande.
+                                    </small>
+                                </div>
+
+                                <!-- Retour à la liste -->
+                                <a th:href="@{/client/credit/list}" class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-list-ul me-1"></i>
+                                    Toutes mes demandes
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal de suppression -->
+            <div th:if="${creditRequest.status.name() == 'PENDING'}" class="modal fade" id="deleteModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                                Confirmer l'annulation
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Êtes-vous sûr de vouloir annuler cette demande de crédit ?</p>
+                            <div class="alert alert-warning">
+                                <strong>Attention:</strong> Cette action est irréversible.
+                                Vous devrez soumettre une nouvelle demande si vous changez d'avis.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                Garder ma demande
+                            </button>
+                            <a th:href="@{/client/credit/delete(id=${creditRequest.id})}" class="btn btn-danger">
+                                <i class="bi bi-trash me-1"></i>
+                                Oui, annuler ma demande
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+<!-- Scripts -->
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+<!-- CSS pour la timeline -->
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 8px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background-color: #dee2e6;
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 25px;
+    }
+
+    .timeline-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .timeline-item i {
+        position: absolute;
+        left: -26px;
+        top: 2px;
+        width: 16px;
+        height: 16px;
+        background-color: white;
+        border-radius: 50%;
+        z-index: 1;
+    }
+
+    .timeline-item.active i {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+
+    .timeline-content {
+        padding-left: 15px;
+    }
+
+    .timeline-item.completed .timeline-content {
+        opacity: 1;
+    }
+
+    .timeline-item:not(.completed):not(.active) .timeline-content {
+        opacity: 0.5;
+    }
+</style>
+</body>
+</html>

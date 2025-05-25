@@ -1,0 +1,118 @@
+# Configuration Spring Boot - Bankati
+spring:
+  # Configuration de l'application
+  application:
+    name: bankati
+
+  # Configuration de la base de données
+  datasource:
+    url: jdbc:mysql://localhost:3306/bankati?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # Configuration JPA/Hibernate
+  jpa:
+    hibernate:
+      ddl-auto: update  # Créer/mettre à jour les tables automatiquement
+    show-sql: true     # Afficher les requêtes SQL
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+    defer-datasource-initialization: true
+
+  # Configuration Thymeleaf
+  thymeleaf:
+    cache: false       # Désactiver le cache en développement
+    encoding: UTF-8
+    prefix: classpath:/templates/
+    suffix: .html
+
+  # Configuration des ressources statiques
+  web:
+    resources:
+      static-locations: classpath:/static/
+      cache:
+        period: 0      # Pas de cache en développement
+
+  # Configuration Spring Security
+  security:
+    user:
+      name: admin      # Utilisateur par défaut (sera remplacé)
+      password: admin
+      roles: ADMIN
+
+# Configuration du serveur
+server:
+  port: 8080
+  servlet:
+    context-path: /bankati
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+# Configuration des logs
+logging:
+  level:
+    ma.bankati: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Configuration personnalisée pour l'application
+bankati:
+  currency:
+    default: DH
+    rates:
+      usd: 1.08
+      eur: 1.0
+      gbp: 0.84
+  credit:
+    min-amount: 1000
+    max-duration: 120
+    min-duration: 6
+
+---
+# Profil de développement
+spring:
+  config:
+    activate:
+      on-profile: dev
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  datasource:
+    url: jdbc:h2:mem:bankati
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+---
+# Profil de production
+spring:
+  config:
+    activate:
+      on-profile: prod
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  thymeleaf:
+    cache: true
+  web:
+    resources:
+      cache:
+        period: 31536000  # 1 an
+
+logging:
+  level:
+    ma.bankati: INFO
+    org.hibernate.SQL: WARN

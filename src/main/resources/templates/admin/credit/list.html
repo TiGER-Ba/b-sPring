@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head}">
+    <title>Gestion des Crédits - Bankati</title>
+</head>
+
+<body>
+<!-- Navbar -->
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<!-- Messages -->
+<div th:replace="~{fragments/layout :: messages}"></div>
+
+<!-- Contenu principal -->
+<div class="container main-content">
+    <div class="row">
+        <div class="col-12">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-primary">
+                    <i class="bi bi-bank me-2"></i>
+                    Gestion des Demandes de Crédit
+                </h2>
+                <!-- Solde du système -->
+                <div th:if="${result}" class="card border-primary">
+                    <div class="card-body text-center py-2">
+                        <small class="text-muted">Solde système</small>
+                        <h5 class="text-primary mb-0" th:text="${result}">0.00 DH</h5>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation par onglets -->
+            <ul class="nav nav-tabs mb-4">
+                <li class="nav-item">
+                    <a class="nav-link"
+                       th:classappend="${statusFilter == null ? 'active' : ''}"
+                       th:href="@{/admin/credits/list}">
+                        <i class="bi bi-list-ul me-1"></i> Toutes les demandes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link"
+                       th:classappend="${statusFilter == 'pending' ? 'active' : ''}"
+                       th:href="@{/admin/credits/pending}">
+                        <i class="bi bi-hourglass-split me-1"></i> En attente
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link"
+                       th:classappend="${statusFilter == 'approved' ? 'active' : ''}"
+                       th:href="@{/admin/credits/list(status=APPROVED)}">
+                        <i class="bi bi-check-circle me-1"></i> Approuvées
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link"
+                       th:classappend="${statusFilter == 'rejected' ? 'active' : ''}"
+                       th:href="@{/admin/credits/list(status=REJECTED)}">
+                        <i class="bi bi-x-circle me-1"></i> Refusées
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Statistiques rapides -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center border-info">
+                        <div class="card-body">
+                            <i class="bi bi-list-ul text-info" style="font-size: 1.5rem;"></i>
+                            <h5 class="mt-2" th:text="${#lists.size(credits)}">0</h5>
+                            <small class="text-muted">Total</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center border-warning">
+                        <div class="card-body">
+                            <i class="bi bi-hourglass-split text-warning" style="font-size: 1.5rem;"></i>
+                            <h5 class="mt-2" th:text="${#lists.size(#lists.select(credits, c -> c.status.name() == 'PENDING'))}">0</h5>
+                            <small class="text-muted">En attente</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center border-success">
+                        <div class="card-body">
+                            <i class="bi bi-check-circle text-success" style="font-size: 1.5rem;"></i>
+                            <h5 class="mt-2" th:text="${#lists.size(#lists.select(credits, c -> c.status.name() == 'APPROVED'))}">0</h5>
+                            <small class="text-muted">Approuvées</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center border-danger">
+                        <div class="card-body">
+                            <i class="bi bi-x-circle text-danger" style="font-size: 1.5rem;"></i>
+                            <h5 class="mt-2" th:text="${#lists.size(#lists.select(credits, c -> c.status.name() == 'REJECTED'))}">0</h5>
+                            <small class="text-muted">Refusées</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tableau des demandes -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-table me-2"></i>
+                        Liste des demandes de crédit
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive" th:if="${not #lists.isEmpty(credits)}">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th class="text-center">ID</th>
+                                <th class="text-center">Client ID</th>
+                                <th class="text-center">Montant</th>
+                                <th class="text-center">Durée</th>
+                                <th class="text-center">Date demande</th>
+                                <th class="text-center">Statut</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="credit : ${credits}">
+                                <td class="text-center fw-bold" th:text="${credit.id}">1</td>
+                                <td class="text-center" th:text="${credit.client.id}">123</td>
+                                <td class="text-center">
+                                            <span class="fw-bold text-success"
+                                                  th:text="${#numbers.formatDecimal(credit.amount, 0, 'COMMA', 2, 'POINT')} + ' DH'">
+                                                15,000.00 DH
+                                            </span>
+                                </td>
+                                <td class="text-center" th:text="${credit.duration} + ' mois'">24 mois</td>
+                                <td class="text-center" th:text="${credit.formattedRequestDate}">01/01/2024</td>
+                                <td class="text-center">
+                                            <span th:switch="${credit.status.name()}" class="badge">
+                                                <span th:case="'PENDING'" class="badge bg-warning">
+                                                    <i class="bi bi-hourglass-split me-1"></i>En attente
+                                                </span>
+                                                <span th:case="'APPROVED'" class="badge bg-success">
+                                                    <i class="bi bi-check-circle me-1"></i>Approuvée
+                                                </span>
+                                                <span th:case="'REJECTED'" class="badge bg-danger">
+                                                    <i class="bi bi-x-circle me-1"></i>Refusée
+                                                </span>
+                                            </span>
+                                </td>
+                                <td class="text-center">
+                                    <!-- Bouton détails -->
+                                    <a th:href="@{/admin/credits/details(id=${credit.id})}"
+                                       class="btn btn-outline-primary btn-sm me-1"
+                                       title="Voir les détails">
+                                        <i class="bi bi-eye-fill"></i>
+                                    </a>
+
+                                    <!-- Boutons d'action pour les demandes en attente -->
+                                    <div th:if="${credit.status.name() == 'PENDING'}" class="d-inline-block">
+                                        <button type="button"
+                                                class="btn btn-outline-success btn-sm me-1"
+                                                data-bs-toggle="modal"
+                                                th:data-bs-target="'#approveModal' + ${credit.id}"
+                                                title="Approuver">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                        <button type="button"
+                                                class="btn btn-outline-danger btn-sm"
+                                                data-bs-toggle="modal"
+                                                th:data-bs-target="'#rejectModal' + ${credit.id}"
+                                                title="Refuser">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Message si aucune demande -->
+                    <div th:if="${#lists.isEmpty(credits)}" class="text-center py-5">
+                        <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+                        <h4 class="mt-3 text-muted">Aucune demande trouvée</h4>
+                        <p class="text-muted mb-4">
+                                <span th:if="${statusFilter != null}"
+                                      th:text="'Aucune demande avec le statut: ' + ${statusFilter}">
+                                </span>
+                            <span th:if="${statusFilter == null}">
+                                    Aucune demande de crédit n'a été soumise pour le moment.
+                                </span>
+                        </p>
+                        <a th:href="@{/admin/credits/list}" class="btn btn-outline-primary">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            Voir toutes les demandes
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modales pour chaque crédit en attente -->
+            <div th:each="credit : ${#lists.select(credits, c -> c.status.name() == 'PENDING')}">
+                <!-- Modal d'approbation -->
+                <div class="modal fade" th:id="'approveModal' + ${credit.id}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form th:action="@{/admin/credits/process}" method="post">
+                                <input type="hidden" name="id" th:value="${credit.id}">
+                                <input type="hidden" name="decision" value="approve">
+
+                                <div class="modal-header bg-light">
+                                    <h5 class="modal-title">
+                                        <i class="bi bi-check-circle text-success me-2"></i>
+                                        Approuver la demande #<span th:text="${credit.id}">1</span>
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="alert alert-info">
+                                        <p class="mb-0">
+                                            Montant: <strong th:text="${credit.formattedAmount}">15,000 DH</strong><br>
+                                            Durée: <strong th:text="${credit.duration} + ' mois'">24 mois</strong><br>
+                                            Client: <strong th:text="${credit.client.fullName}">John Doe</strong>
+                                        </p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Commentaire (optionnel)</label>
+                                        <textarea class="form-control" name="reason" rows="3"
+                                                  placeholder="Commentaire sur l'approbation..."></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bi bi-check-lg me-1"></i>Approuver
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal de refus -->
+                <div class="modal fade" th:id="'rejectModal' + ${credit.id}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form th:action="@{/admin/credits/process}" method="post">
+                                <input type="hidden" name="id" th:value="${credit.id}">
+                                <input type="hidden" name="decision" value="reject">
+
+                                <div class="modal-header bg-light">
+                                    <h5 class="modal-title">
+                                        <i class="bi bi-x-circle text-danger me-2"></i>
+                                        Refuser la demande #<span th:text="${credit.id}">1</span>
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="alert alert-warning">
+                                        <p class="mb-0">
+                                            Montant: <strong th:text="${credit.formattedAmount}">15,000 DH</strong><br>
+                                            Durée: <strong th:text="${credit.duration} + ' mois'">24 mois</strong><br>
+                                            Client: <strong th:text="${credit.client.fullName}">John Doe</strong>
+                                        </p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Motif du refus *</label>
+                                        <textarea class="form-control" name="reason" rows="3" required
+                                                  placeholder="Veuillez préciser la raison du refus..."></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="bi bi-x-lg me-1"></i>Refuser
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+<!-- Scripts -->
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+<!-- Scripts spécifiques -->
+<script>
+    // Animation des lignes
+    document.addEventListener('DOMContentLoaded', function() {
+        const rows = document.querySelectorAll('tbody tr');
+        rows.forEach((row, index) => {
+            row.style.opacity = '0';
+            row.style.transform = 'translateX(-20px)';
+            row.style.transition = 'all 0.3s ease';
+
+            setTimeout(() => {
+                row.style.opacity = '1';
+                row.style.transform = 'translateX(0)';
+            }, index * 50);
+        });
+    });
+</script>
+</body>
+</html>

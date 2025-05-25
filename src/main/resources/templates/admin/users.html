@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head}">
+    <title>Gestion des Utilisateurs - Bankati</title>
+</head>
+
+<body>
+<!-- Navbar -->
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<!-- Messages -->
+<div th:replace="~{fragments/layout :: messages}"></div>
+
+<!-- Contenu principal -->
+<div class="container main-content">
+    <div class="row">
+        <div class="col-12">
+            <!-- En-tête -->
+            <h2 class="text-primary mb-4">
+                <i class="bi bi-people-fill me-2"></i>
+                Gestion des Utilisateurs
+            </h2>
+
+            <!-- Statistiques -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center border-primary">
+                        <div class="card-body">
+                            <i class="bi bi-people text-primary" style="font-size: 2rem;"></i>
+                            <h4 class="mt-2" th:text="${#lists.size(users)}">0</h4>
+                            <small class="text-muted">Total utilisateurs</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center border-success">
+                        <div class="card-body">
+                            <i class="bi bi-shield-check text-success" style="font-size: 2rem;"></i>
+                            <h4 class="mt-2" th:text="${#lists.size(#lists.select(users, u -> u.role.name() == 'ADMIN'))}">0</h4>
+                            <small class="text-muted">Administrateurs</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center border-info">
+                        <div class="card-body">
+                            <i class="bi bi-person-badge text-info" style="font-size: 2rem;"></i>
+                            <h4 class="mt-2" th:text="${#lists.size(#lists.select(users, u -> u.role.name() == 'USER'))}">0</h4>
+                            <small class="text-muted">Clients</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center border-warning">
+                        <div class="card-body">
+                            <i class="bi bi-person-check text-warning" style="font-size: 2rem;"></i>
+                            <h4 class="mt-2" th:text="${#lists.size(#lists.select(users, u -> u.enabled == true))}">0</h4>
+                            <small class="text-muted">Actifs</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des utilisateurs -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-table me-2"></i>
+                        Liste des utilisateurs
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Username</th>
+                                <th>Rôle</th>
+                                <th>Statut</th>
+                                <th>Date création</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="userItem : ${users}">
+                                <td class="fw-medium" th:text="${userItem.lastName}">Doe</td>
+                                <td class="fw-medium" th:text="${userItem.firstName}">John</td>
+                                <td>
+                                    <span class="text-primary fw-bold" th:text="${userItem.username}">johndoe</span>
+                                </td>
+                                <td>
+                                            <span th:switch="${userItem.role.name()}" class="badge">
+                                                <span th:case="'ADMIN'" class="badge bg-primary">
+                                                    <i class="bi bi-shield-fill me-1"></i>Administrateur
+                                                </span>
+                                                <span th:case="'USER'" class="badge bg-success">
+                                                    <i class="bi bi-person-badge-fill me-1"></i>Client
+                                                </span>
+                                            </span>
+                                </td>
+                                <td>
+                                            <span th:if="${userItem.enabled}" class="badge bg-success">
+                                                <i class="bi bi-check-circle me-1"></i>Actif
+                                            </span>
+                                    <span th:if="${!userItem.enabled}" class="badge bg-danger">
+                                                <i class="bi bi-x-circle me-1"></i>Inactif
+                                            </span>
+                                </td>
+                                <td th:text="${#temporals.format(userItem.creationDate, 'dd/MM/yyyy')}">01/01/2024</td>
+                                <td class="text-center">
+                                    <!-- Bouton modifier -->
+                                    <a th:href="@{/users/edit(id=${userItem.id})}"
+                                       class="btn btn-outline-warning btn-sm me-1"
+                                       title="Modifier">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </a>
+
+                                    <!-- Bouton supprimer (sauf pour l'utilisateur connecté) -->
+                                    <a th:if="${userItem.id != currentUser.id}"
+                                       th:href="@{/users/delete(id=${userItem.id})}"
+                                       class="btn btn-outline-danger btn-sm"
+                                       title="Supprimer"
+                                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulaire d'ajout/modification -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i th:class="${editMode} ? 'bi bi-person-gear me-2' : 'bi bi-person-plus me-2'"></i>
+                        <span th:text="${editMode} ? 'Modifier un utilisateur' : 'Ajouter un nouvel utilisateur'">
+                                Ajouter un nouvel utilisateur
+                            </span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Bouton nouveau utilisateur (visible seulement en mode édition) -->
+                    <div th:if="${editMode}" class="text-center mb-4">
+                        <a th:href="@{/users}" class="btn btn-outline-primary">
+                            <i class="bi bi-person-plus-fill me-1"></i>
+                            Nouvel utilisateur
+                        </a>
+                    </div>
+
+                    <form th:action="@{/users/save}" th:object="${user}" method="post">
+                        <input type="hidden" th:field="*{id}">
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <!-- Prénom -->
+                                <div class="mb-3">
+                                    <label for="firstName" class="form-label fw-bold">
+                                        <i class="bi bi-person-badge text-primary me-1"></i>
+                                        Prénom
+                                    </label>
+                                    <input type="text"
+                                           class="form-control"
+                                           id="firstName"
+                                           th:field="*{firstName}"
+                                           placeholder="Prénom"
+                                           required>
+                                    <div th:if="${#fields.hasErrors('firstName')}" class="text-danger small mt-1">
+                                        <span th:errors="*{firstName}"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Nom -->
+                                <div class="mb-3">
+                                    <label for="lastName" class="form-label fw-bold">
+                                        <i class="bi bi-person text-primary me-1"></i>
+                                        Nom
+                                    </label>
+                                    <input type="text"
+                                           class="form-control"
+                                           id="lastName"
+                                           th:field="*{lastName}"
+                                           placeholder="Nom"
+                                           required>
+                                    <div th:if="${#fields.hasErrors('lastName')}" class="text-danger small mt-1">
+                                        <span th:errors="*{lastName}"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <!-- Nom d'utilisateur -->
+                                <div class="mb-3">
+                                    <label for="username" class="form-label fw-bold">
+                                        <i class="bi bi-person-circle text-primary me-1"></i>
+                                        Nom d'utilisateur
+                                    </label>
+                                    <input type="text"
+                                           class="form-control"
+                                           id="username"
+                                           th:field="*{username}"
+                                           placeholder="Nom d'utilisateur"
+                                           required>
+                                    <div th:if="${#fields.hasErrors('username')}" class="text-danger small mt-1">
+                                        <span th:errors="*{username}"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Mot de passe -->
+                                <div class="mb-3">
+                                    <label for="password" class="form-label fw-bold">
+                                        <i class="bi bi-lock-fill text-primary me-1"></i>
+                                        Mot de passe
+                                        <span th:if="${editMode}" class="text-muted small">(laisser vide pour conserver)</span>
+                                    </label>
+                                    <input type="password"
+                                           class="form-control"
+                                           id="password"
+                                           th:field="*{password}"
+                                           placeholder="Mot de passe"
+                                           th:required="${!editMode}">
+                                    <div th:if="${#fields.hasErrors('password')}" class="text-danger small mt-1">
+                                        <span th:errors="*{password}"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rôle -->
+                        <div class="mb-4">
+                            <label for="role" class="form-label fw-bold">
+                                <i class="bi bi-shield-lock text-primary me-1"></i>
+                                Rôle
+                            </label>
+                            <select class="form-select" id="role" th:field="*{role}" required>
+                                <option value="">Choisissez un rôle</option>
+                                <option value="ADMIN">Administrateur</option>
+                                <option value="USER">Client</option>
+                            </select>
+                            <div th:if="${#fields.hasErrors('role')}" class="text-danger small mt-1">
+                                <span th:errors="*{role}"></span>
+                            </div>
+                        </div>
+
+                        <!-- Bouton de soumission -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-save me-1"></i>
+                                <span th:text="${editMode} ? 'Modifier' : 'Enregistrer'">Enregistrer</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+<!-- Scripts -->
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+<!-- Scripts spécifiques -->
+<script>
+    // Animation des lignes du tableau
+    document.addEventListener('DOMContentLoaded', function() {
+        const rows = document.querySelectorAll('tbody tr');
+        rows.forEach((row, index) => {
+            row.style.opacity = '0';
+            row.style.transform = 'translateY(20px)';
+            row.style.transition = 'all 0.3s ease';
+
+            setTimeout(() => {
+                row.style.opacity = '1';
+                row.style.transform = 'translateY(0)';
+            }, index * 50);
+        });
+    });
+
+    // Validation du formulaire
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const username = document.getElementById('username').value.trim();
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName = document.getElementById('lastName').value.trim();
+        const role = document.getElementById('role').value;
+
+        let errors = [];
+
+        if (username.length < 3) {
+            errors.push('Le nom d\'utilisateur doit contenir au moins 3 caractères');
+        }
+
+        if (firstName.length < 2) {
+            errors.push('Le prénom doit contenir au moins 2 caractères');
+        }
+
+        if (lastName.length < 2) {
+            errors.push('Le nom doit contenir au moins 2 caractères');
+        }
+
+        if (!role) {
+            errors.push('Veuillez sélectionner un rôle');
+        }
+
+        // Validation mot de passe pour nouveaux utilisateurs
+        const isEdit = document.querySelector('input[name="id"]').value;
+        const password = document.getElementById('password').value;
+
+        if (!isEdit && password.length < 4) {
+            errors.push('Le mot de passe doit contenir au moins 4 caractères');
+        }
+
+        if (errors.length > 0) {
+            e.preventDefault();
+            alert('Erreurs détectées :\n\n' + errors.join('\n'));
+        }
+    });
+
+    // Effet hover sur les boutons d'action
+    document.querySelectorAll('.btn-sm').forEach(btn => {
+        btn.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.1)';
+        });
+
+        btn.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+
+    // Auto-focus sur le premier champ du formulaire
+    document.addEventListener('DOMContentLoaded', function() {
+        const firstInput = document.querySelector('#firstName');
+        if (firstInput) {
+            firstInput.focus();
+        }
+    });
+</script>
+</body>
+</html>

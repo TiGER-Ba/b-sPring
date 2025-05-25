@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head}">
+    <title>Nouvelle Demande de Crédit - Bankati</title>
+</head>
+
+<body>
+<!-- Navbar -->
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<!-- Messages -->
+<div th:replace="~{fragments/layout :: messages}"></div>
+
+<!-- Contenu principal -->
+<div class="container main-content">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- En-tête -->
+            <div class="text-center mb-4">
+                <h2 class="text-primary">
+                    <i class="bi bi-credit-card-2-front me-2"></i>
+                    Nouvelle demande de crédit
+                </h2>
+                <p class="text-muted">Remplissez le formulaire ci-dessous pour soumettre votre demande</p>
+            </div>
+
+            <!-- Formulaire -->
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-form-document me-2"></i>
+                        Informations de votre demande
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form th:action="@{/client/credit/save}" th:object="${creditRequest}" method="post">
+                        <!-- Montant demandé -->
+                        <div class="mb-4">
+                            <label for="amount" class="form-label fw-bold">
+                                <i class="bi bi-cash-stack me-1 text-primary"></i>
+                                Montant demandé
+                            </label>
+                            <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-cash-coin"></i>
+                                    </span>
+                                <input type="number"
+                                       class="form-control form-control-lg"
+                                       id="amount"
+                                       th:field="*{amount}"
+                                       min="1000"
+                                       step="100"
+                                       placeholder="Ex: 15000"
+                                       required>
+                                <span class="input-group-text">DH</span>
+                            </div>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Montant minimum : 1,000 DH
+                            </div>
+                            <div th:if="${#fields.hasErrors('amount')}" class="text-danger small mt-1">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                <span th:errors="*{amount}"></span>
+                            </div>
+                        </div>
+
+                        <!-- Durée de remboursement -->
+                        <div class="mb-4">
+                            <label for="duration" class="form-label fw-bold">
+                                <i class="bi bi-calendar-range me-1 text-primary"></i>
+                                Durée de remboursement
+                            </label>
+                            <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-clock-history"></i>
+                                    </span>
+                                <select class="form-select form-select-lg"
+                                        id="duration"
+                                        th:field="*{duration}"
+                                        required>
+                                    <option value="">Choisissez une durée</option>
+                                    <option value="6">6 mois</option>
+                                    <option value="12">12 mois</option>
+                                    <option value="18">18 mois</option>
+                                    <option value="24">24 mois</option>
+                                    <option value="36">36 mois</option>
+                                    <option value="48">48 mois</option>
+                                    <option value="60">60 mois</option>
+                                    <option value="72">72 mois</option>
+                                    <option value="84">84 mois</option>
+                                    <option value="96">96 mois</option>
+                                    <option value="108">108 mois</option>
+                                    <option value="120">120 mois</option>
+                                </select>
+                            </div>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Durée entre 6 et 120 mois
+                            </div>
+                            <div th:if="${#fields.hasErrors('duration')}" class="text-danger small mt-1">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                <span th:errors="*{duration}"></span>
+                            </div>
+                        </div>
+
+                        <!-- Calcul de mensualité (automatique) -->
+                        <div class="mb-4">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title text-info">
+                                        <i class="bi bi-calculator me-1"></i>
+                                        Estimation mensuelle
+                                    </h6>
+                                    <div id="monthlyPayment" class="h5 text-primary">
+                                        Remplissez les champs ci-dessus
+                                    </div>
+                                    <small class="text-muted">
+                                        * Calcul approximatif sans intérêts
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Motif du crédit -->
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-bold">
+                                <i class="bi bi-card-text me-1 text-primary"></i>
+                                Motif de votre demande
+                            </label>
+                            <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-pen"></i>
+                                    </span>
+                                <textarea class="form-control"
+                                          id="description"
+                                          th:field="*{description}"
+                                          rows="4"
+                                          placeholder="Décrivez précisément l'utilisation prévue du crédit (achat immobilier, véhicule, travaux, projet personnel, etc.)"
+                                          required></textarea>
+                            </div>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Soyez précis sur l'utilisation prévue du crédit (maximum 1000 caractères)
+                            </div>
+                            <div th:if="${#fields.hasErrors('description')}" class="text-danger small mt-1">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                <span th:errors="*{description}"></span>
+                            </div>
+                        </div>
+
+                        <!-- Conditions et validation -->
+                        <div class="mb-4">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning bg-opacity-25">
+                                    <h6 class="mb-0 text-warning">
+                                        <i class="bi bi-exclamation-triangle me-1"></i>
+                                        Conditions importantes
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-2">
+                                            <i class="bi bi-check text-success me-2"></i>
+                                            Votre demande sera examinée sous 2 à 5 jours ouvrés
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="bi bi-check text-success me-2"></i>
+                                            Vous recevrez une notification par email
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="bi bi-check text-success me-2"></i>
+                                            Vous pouvez suivre l'état de votre demande dans votre espace
+                                        </li>
+                                        <li>
+                                            <i class="bi bi-check text-success me-2"></i>
+                                            Seules les demandes en attente peuvent être annulées
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Boutons d'action -->
+                        <div class="d-flex justify-content-between pt-3">
+                            <a th:href="@{/client/credit/list}" class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-arrow-left me-1"></i>
+                                Retour
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-send me-1"></i>
+                                Soumettre ma demande
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Aide -->
+            <div class="card mt-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="bi bi-question-circle me-2"></i>
+                        Besoin d'aide ?
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Si vous avez des questions concernant votre demande de crédit,
+                        n'hésitez pas à contacter notre service client.
+                    </p>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-info btn-sm" type="button">
+                            <i class="bi bi-telephone me-1"></i>
+                            Nous contacter
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" type="button">
+                            <i class="bi bi-question-circle me-1"></i>
+                            FAQ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+<!-- Scripts -->
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+<!-- Scripts spécifiques -->
+<script>
+    // Calcul automatique de la mensualité
+    function calculateMonthlyPayment() {
+        const amount = document.getElementById('amount').value;
+        const duration = document.getElementById('duration').value;
+        const monthlyPaymentElement = document.getElementById('monthlyPayment');
+
+        if (amount && duration && amount > 0 && duration > 0) {
+            const monthly = (parseFloat(amount) / parseInt(duration)).toFixed(2);
+            monthlyPaymentElement.innerHTML = `
+                    <span class="text-success">${monthly} DH / mois</span>
+                `;
+        } else {
+            monthlyPaymentElement.innerHTML = 'Remplissez les champs ci-dessus';
+        }
+    }
+
+    // Écouter les changements
+    document.getElementById('amount').addEventListener('input', calculateMonthlyPayment);
+    document.getElementById('duration').addEventListener('change', calculateMonthlyPayment);
+
+    // Validation côté client
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const amount = parseFloat(document.getElementById('amount').value);
+        const duration = parseInt(document.getElementById('duration').value);
+        const description = document.getElementById('description').value.trim();
+
+        let errors = [];
+
+        if (amount < 1000) {
+            errors.push('Le montant minimum est de 1,000 DH');
+        }
+
+        if (duration < 6 || duration > 120) {
+            errors.push('La durée doit être entre 6 et 120 mois');
+        }
+
+        if (description.length < 10) {
+            errors.push('La description doit contenir au moins 10 caractères');
+        }
+
+        if (errors.length > 0) {
+            e.preventDefault();
+            alert('Erreurs détectées :\n\n' + errors.join('\n'));
+        }
+    });
+
+    // Animation d'entrée
+    document.addEventListener('DOMContentLoaded', function() {
+        const card = document.querySelector('.card.shadow');
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'all 0.5s ease';
+
+        setTimeout(() => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, 200);
+    });
+</script>
+</body>
+</html>
