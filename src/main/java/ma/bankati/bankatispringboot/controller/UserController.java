@@ -17,9 +17,6 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Contrôleur pour la gestion des utilisateurs (admin uniquement)
- */
 @Controller
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -29,37 +26,29 @@ public class UserController {
 
     private final UserService userService;
 
-    /**
-     * Liste de tous les utilisateurs
-     */
     @GetMapping({"/", ""})
     public String listUsers(@AuthenticationPrincipal User currentUser, Model model) {
         log.debug("Liste des utilisateurs pour admin: {}", currentUser.getUsername());
 
         List<User> users = userService.findAll();
-        User editUser = new User(); // Pour le formulaire
+        User editUser = new User();
 
         model.addAttribute("users", users);
         model.addAttribute("user", editUser);
         model.addAttribute("currentUser", currentUser);
-        model.addAttribute("AppName", "Bankati");
+        // AppName et currentPage sont ajoutés automatiquement par GlobalControllerAdvice
 
         return "admin/users";
     }
 
-    /**
-     * Formulaire d'édition d'un utilisateur
-     */
     @GetMapping("/edit")
     public String editUser(@RequestParam("id") Long id,
                            @AuthenticationPrincipal User currentUser,
                            Model model,
                            RedirectAttributes redirectAttributes) {
-
         log.debug("Édition utilisateur ID: {} par admin: {}", id, currentUser.getUsername());
 
         Optional<User> userOpt = userService.findById(id);
-
         if (userOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage", "Utilisateur introuvable");
             return "redirect:/users";
@@ -70,44 +59,38 @@ public class UserController {
         model.addAttribute("users", users);
         model.addAttribute("user", userOpt.get());
         model.addAttribute("currentUser", currentUser);
-        model.addAttribute("AppName", "Bankati");
         model.addAttribute("editMode", true);
+        // AppName et currentPage sont ajoutés automatiquement par GlobalControllerAdvice
 
         return "admin/users";
     }
 
-    /**
-     * Sauvegarde d'un utilisateur (création ou modification)
-     */
     @PostMapping("/save")
     public String saveUser(@Valid @ModelAttribute("user") User user,
                            BindingResult bindingResult,
                            @AuthenticationPrincipal User currentUser,
                            Model model,
                            RedirectAttributes redirectAttributes) {
-
         log.debug("Sauvegarde utilisateur: {} par admin: {}", user.getUsername(), currentUser.getUsername());
 
         if (bindingResult.hasErrors()) {
             List<User> users = userService.findAll();
             model.addAttribute("users", users);
             model.addAttribute("currentUser", currentUser);
-            model.addAttribute("AppName", "Bankati");
+            // AppName et currentPage sont ajoutés automatiquement par GlobalControllerAdvice
             return "admin/users";
         }
 
         try {
-            // Vérification de l'unicité du nom d'utilisateur
             if (user.getId() == null && userService.existsByUsername(user.getUsername())) {
                 model.addAttribute("errorMessage", "Ce nom d'utilisateur existe déjà");
                 List<User> users = userService.findAll();
                 model.addAttribute("users", users);
                 model.addAttribute("currentUser", currentUser);
-                model.addAttribute("AppName", "Bankati");
+                // AppName et currentPage sont ajoutés automatiquement par GlobalControllerAdvice
                 return "admin/users";
             }
 
-            // Si c'est une modification et qu'aucun mot de passe n'est fourni, garder l'ancien
             if (user.getId() != null && (user.getPassword() == null || user.getPassword().trim().isEmpty())) {
                 Optional<User> existingUserOpt = userService.findById(user.getId());
                 if (existingUserOpt.isPresent()) {
@@ -116,7 +99,6 @@ public class UserController {
             }
 
             User savedUser = userService.save(user);
-
             String action = user.getId() == null ? "créé" : "modifié";
             redirectAttributes.addFlashAttribute("successMessage",
                     "Utilisateur " + savedUser.getUsername() + " " + action + " avec succès");
@@ -132,18 +114,13 @@ public class UserController {
         return "redirect:/users";
     }
 
-    /**
-     * Suppression d'un utilisateur
-     */
     @GetMapping("/delete")
     public String deleteUser(@RequestParam("id") Long id,
                              @AuthenticationPrincipal User currentUser,
                              RedirectAttributes redirectAttributes) {
-
         log.debug("Suppression utilisateur ID: {} par admin: {}", id, currentUser.getUsername());
 
         try {
-            // Empêcher la suppression de son propre compte
             if (id.equals(currentUser.getId())) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Vous ne pouvez pas supprimer votre propre compte");
                 return "redirect:/users";

@@ -108,7 +108,7 @@
         <!-- Logo & Brand -->
         <a class="navbar-brand d-flex align-items-center text-primary" th:href="@{/home}">
             <i class="bi bi-bank2 me-2"></i>
-            <span th:text="${AppName}">Bankati</span>
+            <span th:text="${AppName ?: 'Bankati'}">Bankati</span>
         </a>
 
         <!-- Menu principal -->
@@ -116,7 +116,7 @@
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
                     <a class="nav-link text-primary" th:href="@{/home}"
-                       th:classappend="${#httpServletRequest.requestURI == '/bankati/home' or #httpServletRequest.requestURI == '/bankati/' ? 'active' : ''}">
+                       th:classappend="${currentPage == 'home' ? 'active' : ''}">
                         <i class="bi bi-house-door me-1"></i> Accueil
                     </a>
                 </li>
@@ -124,13 +124,13 @@
                 <!-- Menu Admin -->
                 <li class="nav-item" sec:authorize="hasRole('ADMIN')">
                     <a class="nav-link text-primary" th:href="@{/users}"
-                       th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/users') ? 'active' : ''}">
+                       th:classappend="${currentPage == 'users' ? 'active' : ''}">
                         <i class="bi bi-people-fill me-1"></i> Utilisateurs
                     </a>
                 </li>
                 <li class="nav-item" sec:authorize="hasRole('ADMIN')">
                     <a class="nav-link text-primary" th:href="@{/admin/credits/list}"
-                       th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/admin/credits') ? 'active' : ''}">
+                       th:classappend="${currentPage == 'admin-credits' ? 'active' : ''}">
                         <i class="bi bi-cash-coin me-1"></i> Gestion Crédits
                     </a>
                 </li>
@@ -138,12 +138,13 @@
                 <!-- Menu Client -->
                 <li class="nav-item" sec:authorize="hasRole('USER')">
                     <a class="nav-link text-primary" th:href="@{/client/credit/list}"
-                       th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/client/credit') ? 'active' : ''}">
+                       th:classappend="${currentPage == 'client-credits' ? 'active' : ''}">
                         <i class="bi bi-credit-card-2-front me-1"></i> Mes Crédits
                     </a>
                 </li>
                 <li class="nav-item" sec:authorize="hasRole('USER')">
-                    <a class="nav-link text-primary" th:href="@{/client/credit/new}">
+                    <a class="nav-link text-primary" th:href="@{/client/credit/new}"
+                       th:classappend="${currentPage == 'new-credit' ? 'active' : ''}">
                         <i class="bi bi-plus-circle me-1"></i> Nouvelle Demande
                     </a>
                 </li>
@@ -153,13 +154,13 @@
         <!-- Convertisseur de devise -->
         <div class="me-3" sec:authorize="isAuthenticated()">
             <form th:action="@{/convertCurrency}" method="post" class="d-flex align-items-center">
-                <input type="hidden" name="returnUrl" th:value="${#httpServletRequest.requestURI}">
+                <input type="hidden" name="returnUrl" th:value="${returnUrl ?: '/home'}">
                 <div class="input-group input-group-sm currency-converter">
                     <label class="input-group-text border-0 bg-transparent" for="currencySelect">
                         <i class="bi bi-currency-exchange me-1"></i>
                     </label>
                     <select class="form-select form-select-sm" id="currencySelect" name="currency" onchange="this.form.submit()">
-                        <option value="dirham" th:selected="${selectedCurrency == 'default' or selectedCurrency == 'dirham'}">DH</option>
+                        <option value="dirham" th:selected="${selectedCurrency == 'default' or selectedCurrency == 'dirham' or selectedCurrency == null}">DH</option>
                         <option value="dollar" th:selected="${selectedCurrency == 'dollar'}">$</option>
                         <option value="euro" th:selected="${selectedCurrency == 'euro'}">€</option>
                         <option value="pound" th:selected="${selectedCurrency == 'pound'}">£</option>
@@ -219,7 +220,7 @@
             <span class="text-muted">
                 <strong class="text-primary">
                     <i class="bi bi-bank me-1"></i>
-                    <span th:text="${AppName}">Bankati</span> 2025
+                    <span th:text="${AppName ?: 'Bankati'}">Bankati</span> 2025
                 </strong>
                 © Tous droits réservés
             </span>

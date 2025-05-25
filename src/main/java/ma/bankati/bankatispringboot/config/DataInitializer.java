@@ -1,4 +1,3 @@
-// ===== ma/bankati/bankatispringboot/config/DataInitializer.java =====
 package ma.bankati.bankatispringboot.config;
 
 import lombok.RequiredArgsConstructor;
@@ -10,6 +9,7 @@ import ma.bankati.bankatispringboot.entity.enums.ERole;
 import ma.bankati.bankatispringboot.repository.CreditRequestRepository;
 import ma.bankati.bankatispringboot.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +19,7 @@ import java.util.Optional;
 
 /**
  * Initialise les données de base lors du démarrage de l'application
+ * Utilise @Lazy pour éviter les dépendances circulaires
  */
 @Component
 @RequiredArgsConstructor
@@ -27,6 +28,9 @@ public class DataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final CreditRequestRepository creditRequestRepository;
+
+    // Utilisation de @Lazy pour éviter la dépendance circulaire
+    @Lazy
     private final PasswordEncoder passwordEncoder;
 
     @Override

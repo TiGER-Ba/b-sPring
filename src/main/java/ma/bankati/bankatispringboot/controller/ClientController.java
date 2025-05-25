@@ -11,9 +11,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-/**
- * Contrôleur pour les pages client
- */
 @Controller
 @RequestMapping("/client")
 @RequiredArgsConstructor
@@ -23,20 +20,15 @@ public class ClientController {
 
     private final CreditService creditService;
 
-    /**
-     * Page d'accueil client
-     */
     @GetMapping({"/", "/home"})
     public String clientHome(@AuthenticationPrincipal User user, Model model) {
-
         log.debug("Accès dashboard client pour: {}", user.getUsername());
 
-        // Ajouter des statistiques du client
         long myCredits = creditService.findByClientId(user.getId()).size();
 
         model.addAttribute("user", user);
-        model.addAttribute("AppName", "Bankati");
         model.addAttribute("myCredits", myCredits);
+        // AppName et currentPage sont ajoutés automatiquement par GlobalControllerAdvice
 
         return "client/home";
     }

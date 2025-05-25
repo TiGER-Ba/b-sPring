@@ -17,9 +17,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpSession;
 
-/**
- * Contrôleur principal pour les pages d'accueil
- */
 @Controller
 @RequiredArgsConstructor
 @Slf4j
@@ -27,12 +24,8 @@ public class HomeController {
 
     private final MoneyService moneyService;
 
-    /**
-     * Page d'accueil - redirige selon le rôle
-     */
     @GetMapping({"/", "/home"})
     public String home(@AuthenticationPrincipal User user, Model model, HttpSession session) {
-
         log.debug("Accès page d'accueil pour l'utilisateur: {}", user.getUsername());
 
         // Récupérer les données de conversion depuis la session
@@ -52,7 +45,7 @@ public class HomeController {
         model.addAttribute("selectedCurrency", selectedCurrency);
         model.addAttribute("defaultResult", defaultAmount);
         model.addAttribute("user", user);
-        model.addAttribute("AppName", "Bankati");
+        // AppName et currentPage sont ajoutés automatiquement par GlobalControllerAdvice
 
         // Redirection selon le rôle
         if (user.getRole() == ERole.ADMIN) {
@@ -62,15 +55,11 @@ public class HomeController {
         }
     }
 
-    /**
-     * Conversion de devise
-     */
     @PostMapping("/convertCurrency")
     public String convertCurrency(@RequestParam("currency") String currency,
                                   @RequestParam(value = "returnUrl", required = false) String returnUrl,
                                   HttpSession session,
                                   RedirectAttributes redirectAttributes) {
-
         log.debug("Conversion de devise demandée: {}", currency);
 
         try {
@@ -81,11 +70,9 @@ public class HomeController {
                 default -> Devise.DH;
             };
 
-            // Effectuer la conversion
             MoneyDataDto convertedAmount = moneyService.convertBalance(devise);
             MoneyDataDto defaultAmount = moneyService.getDefaultBalance();
 
-            // Stocker en session
             session.setAttribute("convertedAmount", convertedAmount);
             session.setAttribute("selectedCurrency", currency);
             session.setAttribute("defaultAmount", defaultAmount);
@@ -97,7 +84,6 @@ public class HomeController {
             redirectAttributes.addFlashAttribute("errorMessage", "Erreur lors de la conversion de devise");
         }
 
-        // Redirection vers la page d'origine ou /home par défaut
         if (returnUrl != null && !returnUrl.isEmpty()) {
             return "redirect:" + returnUrl;
         }

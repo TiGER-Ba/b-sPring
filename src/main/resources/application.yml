@@ -6,9 +6,9 @@ spring:
 
   # Configuration de la base de données
   datasource:
-    url: jdbc:mysql://localhost:3306/bankati?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/Bkspring?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
     username: root
-    password: root
+    password: tigerbaba2012
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   # Configuration JPA/Hibernate

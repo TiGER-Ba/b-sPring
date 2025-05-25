@@ -39,7 +39,8 @@ public class AuthController {
             model.addAttribute("globalMessage", "Vous avez été déconnecté avec succès.");
         }
 
-        model.addAttribute("AppName", "Bankati");
+        // AppName et currentPage sont ajoutés automatiquement par GlobalControllerAdvice
+        // Pas besoin de les ajouter manuellement
 
         return "auth/login";
     }

@@ -16,9 +16,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Contrôleur pour la gestion des crédits côté admin
- */
 @Controller
 @RequestMapping("/admin/credits")
 @RequiredArgsConstructor
@@ -28,18 +25,13 @@ public class AdminCreditController {
 
     private final CreditService creditService;
 
-    /**
-     * Liste de toutes les demandes de crédit
-     */
     @GetMapping({"/", "/list"})
     public String listAllCredits(@RequestParam(value = "status", required = false) String status,
                                  @AuthenticationPrincipal User user,
                                  Model model) {
-
         log.debug("Liste des crédits pour admin: {}, filtre: {}", user.getUsername(), status);
 
         List<CreditRequest> credits;
-
         if (status != null && !status.isEmpty()) {
             try {
                 CreditStatus creditStatus = CreditStatus.valueOf(status.toUpperCase());
@@ -54,14 +46,11 @@ public class AdminCreditController {
 
         model.addAttribute("credits", credits);
         model.addAttribute("user", user);
-        model.addAttribute("AppName", "Bankati");
+        // AppName et currentPage sont ajoutés automatiquement par GlobalControllerAdvice
 
         return "admin/credit/list";
     }
 
-    /**
-     * Liste des demandes en attente
-     */
     @GetMapping("/pending")
     public String listPendingCredits(@AuthenticationPrincipal User user, Model model) {
         log.debug("Liste des crédits en attente pour admin: {}", user.getUsername());
@@ -71,66 +60,55 @@ public class AdminCreditController {
         model.addAttribute("credits", pendingCredits);
         model.addAttribute("statusFilter", "pending");
         model.addAttribute("user", user);
-        model.addAttribute("AppName", "Bankati");
+        // AppName et currentPage sont ajoutés automatiquement par GlobalControllerAdvice
 
         return "admin/credit/list";
     }
 
-    /**
-     * Détails d'une demande de crédit
-     */
     @GetMapping("/details")
     public String creditDetails(@RequestParam("id") Long id,
                                 @AuthenticationPrincipal User user,
                                 Model model,
                                 RedirectAttributes redirectAttributes) {
-
         log.debug("Détails crédit ID: {} pour admin: {}", id, user.getUsername());
 
         Optional<CreditRequest> creditOpt = creditService.findById(id);
-
         if (creditOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage", "Demande de crédit introuvable");
-            return "redirect:/admin/credit/list";
+            return "redirect:/admin/credits/list";
         }
 
         model.addAttribute("creditRequest", creditOpt.get());
         model.addAttribute("user", user);
-        model.addAttribute("AppName", "Bankati");
+        // AppName et currentPage sont ajoutés automatiquement par GlobalControllerAdvice
 
         return "admin/credit/details";
     }
 
-    /**
-     * Traitement d'une demande de crédit (approbation/rejet)
-     */
     @PostMapping("/process")
     public String processCreditRequest(@RequestParam("id") Long id,
                                        @RequestParam("decision") String decision,
                                        @RequestParam(value = "reason", required = false) String reason,
                                        @AuthenticationPrincipal User user,
                                        RedirectAttributes redirectAttributes) {
-
         log.debug("Traitement crédit ID: {} par admin: {}, décision: {}", id, user.getUsername(), decision);
 
         try {
             if (!creditService.canProcessCreditRequest(id)) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Cette demande ne peut plus être traitée");
-                return "redirect:/admin/credit/list";
+                return "redirect:/admin/credits/list";
             }
 
             if ("approve".equals(decision)) {
                 creditService.approveCreditRequest(id, reason);
                 redirectAttributes.addFlashAttribute("successMessage",
                         "Demande de crédit #" + id + " approuvée avec succès");
-
                 log.info("Crédit approuvé: ID={}, Admin={}", id, user.getUsername());
 
             } else if ("reject".equals(decision)) {
                 creditService.rejectCreditRequest(id, reason);
                 redirectAttributes.addFlashAttribute("successMessage",
                         "Demande de crédit #" + id + " rejetée");
-
                 log.info("Crédit rejeté: ID={}, Admin={}", id, user.getUsername());
 
             } else {
@@ -142,6 +120,6 @@ public class AdminCreditController {
             redirectAttributes.addFlashAttribute("errorMessage", "Erreur lors du traitement: " + e.getMessage());
         }
 
-        return "redirect:/admin/credit/list";
+        return "redirect:/admin/credits/list";
     }
 }
