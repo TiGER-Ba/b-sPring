@@ -42,7 +42,8 @@
                     <div class="card text-center border-warning">
                         <div class="card-body">
                             <i class="bi bi-hourglass-split text-warning" style="font-size: 1.5rem;"></i>
-                            <h5 class="mt-2" th:text="${#lists.size(#lists.select(creditRequests, cr -> cr.status.name() == 'PENDING'))}">0</h5>
+                            <h5 class="mt-2" th:text="${pendingCount}">0</h5>
+
                             <small class="text-muted">En attente</small>
                         </div>
                     </div>
@@ -51,7 +52,7 @@
                     <div class="card text-center border-success">
                         <div class="card-body">
                             <i class="bi bi-check-circle text-success" style="font-size: 1.5rem;"></i>
-                            <h5 class="mt-2" th:text="${#lists.size(#lists.select(creditRequests, cr -> cr.status.name() == 'APPROVED'))}">0</h5>
+                            <h5 class="mt-2" th:text="${approvedCount}">0</h5>
                             <small class="text-muted">Approuvées</small>
                         </div>
                     </div>
@@ -60,7 +61,7 @@
                     <div class="card text-center border-danger">
                         <div class="card-body">
                             <i class="bi bi-x-circle text-danger" style="font-size: 1.5rem;"></i>
-                            <h5 class="mt-2" th:text="${#lists.size(#lists.select(creditRequests, cr -> cr.status.name() == 'REJECTED'))}">0</h5>
+                            <h5 class="mt-2" th:text="${rejectedCount}">0</h5>
                             <small class="text-muted">Refusées</small>
                         </div>
                     </div>

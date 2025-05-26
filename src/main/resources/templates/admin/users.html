@@ -36,7 +36,8 @@
                     <div class="card text-center border-success">
                         <div class="card-body">
                             <i class="bi bi-shield-check text-success" style="font-size: 2rem;"></i>
-                            <h4 class="mt-2" th:text="${#lists.size(#lists.select(users, u -> u.role.name() == 'ADMIN'))}">0</h4>
+                            <h4 class="mt-2" th:text="${totalAdmins}"
+                            >0</h4>
                             <small class="text-muted">Administrateurs</small>
                         </div>
                     </div>
@@ -45,7 +46,7 @@
                     <div class="card text-center border-info">
                         <div class="card-body">
                             <i class="bi bi-person-badge text-info" style="font-size: 2rem;"></i>
-                            <h4 class="mt-2" th:text="${#lists.size(#lists.select(users, u -> u.role.name() == 'USER'))}">0</h4>
+                            <h4 class="mt-2" th:text="${totalClients}">0</h4>
                             <small class="text-muted">Clients</small>
                         </div>
                     </div>
@@ -54,7 +55,7 @@
                     <div class="card text-center border-warning">
                         <div class="card-body">
                             <i class="bi bi-person-check text-warning" style="font-size: 2rem;"></i>
-                            <h4 class="mt-2" th:text="${#lists.size(#lists.select(users, u -> u.enabled == true))}">0</h4>
+                            <h4 class="mt-2" th:text="${activeUsers}">0</h4>
                             <small class="text-muted">Actifs</small>
                         </div>
                     </div>

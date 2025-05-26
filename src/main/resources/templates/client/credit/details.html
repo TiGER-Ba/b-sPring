@@ -169,7 +169,7 @@
                                             <td class="fw-bold text-muted">Date de traitement:</td>
                                             <td th:text="${creditRequest.formattedProcessedDate}">02/01/2024</td>
                                         </tr>
-                                        <tr th:if="${creditRequest.status.name() == 'PENDING'}">
+                                        <tr th:if="${creditRequest.status.name() eq 'PENDING'}">
                                             <td class="fw-bold text-muted">Délai estimé:</td>
                                             <td>
                                                 <span class="text-warning">2-5 jours ouvrés</span>
@@ -222,19 +222,19 @@
 
                                 <!-- Étape 2: En cours -->
                                 <div class="timeline-item"
-                                     th:classappend="${creditRequest.status.name() == 'PENDING'} ? 'active' : 'completed'">
-                                    <i th:class="${creditRequest.status.name() == 'PENDING'} ? 'bi bi-arrow-clockwise text-warning' : 'bi bi-check-circle-fill text-success'"></i>
+                                     th:classappend="${creditRequest.status.name() eq 'PENDING'} ? 'active' : 'completed'">
+                                    <i th:class="${creditRequest.status.name() eq 'PENDING'} ? 'bi bi-arrow-clockwise text-warning' : 'bi bi-check-circle-fill text-success'"></i>
                                     <div class="timeline-content">
                                         <strong>Examen en cours</strong><br>
-                                        <small th:if="${creditRequest.status.name() == 'PENDING'}">En cours...</small>
-                                        <small th:if="${creditRequest.status.name() != 'PENDING'}"
+                                        <small th:if="${creditRequest.status.name() eq 'PENDING'}">En cours...</small>
+                                        <small th:if="${creditRequest.status.name() ne 'PENDING'}"
                                                th:text="${creditRequest.formattedProcessedDate}">02/01/2024</small>
                                     </div>
                                 </div>
 
                                 <!-- Étape 3: Décision -->
                                 <div class="timeline-item"
-                                     th:classappend="${creditRequest.status.name() != 'PENDING'} ? 'completed' : ''">
+                                     th:classappend="${creditRequest.status.name() ne 'PENDING'} ? 'completed' : ''">
                                     <i th:switch="${creditRequest.status.name()}">
                                         <i th:case="'APPROVED'" class="bi bi-check-circle-fill text-success"></i>
                                         <i th:case="'REJECTED'" class="bi bi-x-circle-fill text-danger"></i>
@@ -266,7 +266,7 @@
                         <div class="card-body">
                             <div class="d-grid gap-2">
                                 <!-- Supprimer si en attente -->
-                                <div th:if="${creditRequest.status.name() == 'PENDING'}">
+                                <div th:if="${creditRequest.status.name() eq 'PENDING'}">
                                     <button type="button"
                                             class="btn btn-outline-danger w-100"
                                             data-bs-toggle="modal"
@@ -280,7 +280,7 @@
                                 </div>
 
                                 <!-- Nouvelle demande si refusée -->
-                                <div th:if="${creditRequest.status.name() == 'REJECTED'}">
+                                <div th:if="${creditRequest.status.name() eq 'REJECTED'}">
                                     <a th:href="@{/client/credit/new}" class="btn btn-primary w-100">
                                         <i class="bi bi-plus-circle me-1"></i>
                                         Nouvelle demande
@@ -302,7 +302,7 @@
             </div>
 
             <!-- Modal de suppression -->
-            <div th:if="${creditRequest.status.name() == 'PENDING'}" class="modal fade" id="deleteModal" tabindex="-1">
+            <div th:if="${creditRequest.status.name() eq 'PENDING'}" class="modal fade" id="deleteModal" tabindex="-1">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
